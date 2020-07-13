@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'taggit',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +132,18 @@ MEDIA_URL = '/media/'
 
 
 TAGGIT_CASE_INSENSITIVE = True
+
+# DRF
+REST_FRAMEWORK = {
+    # To activate pagination, uncomment this
+    # 'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomHeaderPagination',
+    # 'PAGE_SIZE': 10,
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    #     'rest_framework.authentication.SessionAuthentication',
+    # ]
+}
+
