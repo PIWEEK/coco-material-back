@@ -20,4 +20,4 @@ class VectorAdmin(admin.ModelAdmin):
         return u", ".join(o.name for o in obj.tags.all())
 
     def svg_image(self, obj):
-        return mark_safe(f'<img src="{obj.svg.url}" width=200 height=200 />')
+        return mark_safe(f'<img src="{obj.svg.url}" width=250 height=250 />')
