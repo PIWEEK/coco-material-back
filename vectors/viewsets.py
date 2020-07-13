@@ -11,5 +11,14 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Vector.objects.all()
     serializer_class = VectorSerializer
+
+    def get_queryset(self):
+        queryset = Vector.objects.all()
+        tags = self.request.query_params.get('tags', None)
+        tags = tags.split(',')
+        if tags is not None:
+            queryset = Vector.objects.filter(tags__name__in=tags).distinct()
+
+        return queryset
+

@@ -4,7 +4,7 @@ from taggit.models import Tag
 from vectors.models import Vector
 
 
-class TaggitSerializer(serializers.ModelSerializer):
+class TaggitSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Tag
         fields = '__all__'
