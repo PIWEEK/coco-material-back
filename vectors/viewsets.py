@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import viewsets
 from taggit.models import Tag
 
@@ -18,7 +19,11 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
         tags = self.request.query_params.get('tags', None)
         tags = tags.split(',')
         if tags is not None:
-            queryset = Vector.objects.filter(tags__name__in=tags).distinct()
+            and_condition = Q()
+            for tag in tags:
+                and_condition.add(Q(tags__name=tag), Q.AND)
+
+            queryset = Vector.objects.filter(and_condition).distinct()
 
         return queryset
 
