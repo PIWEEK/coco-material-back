@@ -22,14 +22,13 @@ class VectorSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Vector
-        fields = '__all__'
+        fields = ('url', 'name', 'tags', 'svg')
 
-    def create(self, validated_data):
-        tags = validated_data.pop('tags')
-        instance = super(VectorSerializer, self).create(validated_data)
-        instance.tags.set(*tags)
-        return instance
 
-    def update(self, validated_data):
-        instance = self.create(validated_data)
-        return instance
+class DetailedVectorSerializer(serializers.HyperlinkedModelSerializer):
+    tags = TagSerializer()
+
+    class Meta:
+        model = Vector
+        fields = ('url', 'name', 'tags', 'svg', 'svg_content')
+

@@ -11,6 +11,12 @@ class Vector(models.Model):
     svg = models.FileField()
     tags = TaggableManager()
 
+    @property
+    def svg_content(self):
+        with open(self.svg.path, 'r') as f:
+            text = f.read()
+            return text
+
     def __str__(self):
         return self.name
 

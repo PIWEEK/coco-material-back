@@ -2,7 +2,7 @@ from django.db.models import Q
 from rest_framework import viewsets
 from taggit.models import Tag
 
-from vectors.serializers import VectorSerializer, TaggitSerializer
+from vectors.serializers import DetailedVectorSerializer, VectorSerializer, TaggitSerializer
 from vectors.models import Vector
 
 
@@ -12,7 +12,6 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = VectorSerializer
 
     def get_queryset(self):
         queryset = Vector.objects.all()
@@ -27,3 +26,9 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
         return queryset
 
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return VectorSerializer
+
+        return DetailedVectorSerializer
