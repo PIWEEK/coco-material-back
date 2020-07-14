@@ -23,11 +23,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '*93m&1d9qn*pym-r%-us6*qsr!+_t_f5s#k@kf#-(+opf^+yn='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('COCO_DEBUG', True)
+_debug = os.environ.get('COCO_DEBUG', False)
+if _debug=='True':
+    _debug = True
+DEBUG = _debug
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
-
 
 # Application definition
 
