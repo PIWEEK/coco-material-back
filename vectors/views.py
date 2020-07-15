@@ -17,11 +17,12 @@ class BulkDownload(APIView):
             return response
 
         tags = request.query_params['tags'].split(',')
-        and_condition = Q()
+        queryset = Vector.objects
+        tags = tags.split(',')
         for tag in tags:
-            and_condition.add(Q(tags__name=tag), Q.AND)
+            queryset = queryset.filter(tags__name=tag)
 
-        vectors = Vector.objects.filter(and_condition).distinct()
+        vectors = queryset.distinct()
         if not vectors:
             response = Response({'error': 'there are no vectors with these tags'}, status=400)
             return response
