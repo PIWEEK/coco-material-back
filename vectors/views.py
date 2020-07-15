@@ -18,7 +18,6 @@ class BulkDownload(APIView):
 
         tags = request.query_params['tags'].split(',')
         queryset = Vector.objects
-        tags = tags.split(',')
         for tag in tags:
             queryset = queryset.filter(tags__name=tag)
 
