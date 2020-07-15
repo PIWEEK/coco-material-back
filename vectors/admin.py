@@ -10,14 +10,18 @@ class VectorAdmin(admin.ModelAdmin):
         ('Main', {'fields': ('name', 'tags',)}),
         ('Vector', {'fields': ('svg', 'svg_image')}),
     )
-    list_display = ['name', 'tag_list']
-    readonly_fields = ['svg_image',]
+    list_display = ['name', 'svg_image_thumb', 'tags']
+    readonly_fields = ['svg_image', 'svg_image_thumb']
+    list_editable = ['tags']
+    list_filter = ['tags']
+    search_fields = ['name']
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
 
-    def tag_list(self, obj):
-        return u", ".join(o.name for o in obj.tags.all())
-
     def svg_image(self, obj):
         return mark_safe(f'<img src="{obj.svg.url}" width=250 height=250 />')
+
+    def svg_image_thumb(self, obj):
+        return mark_safe(f'<img src="{obj.svg.url}" width=70 height=70 />')
+
