@@ -25,3 +25,7 @@ class VectorAdmin(admin.ModelAdmin):
     def svg_image_thumb(self, obj):
         return mark_safe(f'<img src="{obj.svg.url}" width=70 height=70 />')
 
+    class Media:
+        css = {
+            'all': ('coco_material/css/cocostyle.css',)
+        }
