@@ -22,7 +22,7 @@ class VectorSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Vector
-        fields = ('url', 'name', 'tags', 'svg')
+        fields = ('id', 'url', 'name', 'tags', 'svg')
 
 
 class DetailedVectorSerializer(serializers.HyperlinkedModelSerializer):
@@ -30,5 +30,5 @@ class DetailedVectorSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Vector
-        fields = ('url', 'name', 'tags', 'svg', 'svg_content')
+        fields = ('id', 'url', 'name', 'tags', 'svg', 'svg_content')
 
