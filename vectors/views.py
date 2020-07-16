@@ -67,10 +67,10 @@ class Download(APIView):
                         paths = dom.getElementsByTagName('path')
                         for path in paths:
                             fill = path.getAttribute('fill')
-                            if fill == '#fff':
-                                fill = f'#{new_fill}'
-                            else: # fill == 030303
+                            if fill == '#030303':
                                 fill = f'#{new_stroke}'
+                            else: # fill == fff | ffffff
+                                fill = f'#{new_fill}'
                             path.setAttribute('fill', fill)
 
                         newsvg.write(dom.toxml())
