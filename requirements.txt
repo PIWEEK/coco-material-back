@@ -7,3 +7,4 @@ django-taggit==1.3.0
 djangorestframework==3.11.0
 gunicorn==20.0.4
 psycopg2==2.8.5
+svgutils==0.3.1
