@@ -39,6 +39,11 @@ class Download(APIView):
             response = Response({'error': 'there are no vectors with these tags'}, status=400)
             return response
 
+        if len(vectors) == 1:
+            zip_file_name = f'{vectors[0].svg.name}.zip'
+        else:
+            zip_file_name = f'{"_".join(tags)}.zip'
+
         img_format = request.query_params.get('img_format', 'svg')
         if img_format not in ['png', 'svg']:
             response = Response({'error': 'incorrect format, png or svg'}, status=400)
@@ -54,7 +59,7 @@ class Download(APIView):
 
         # zip
         with tempfile.TemporaryDirectory() as directory:
-            zip_name = f'{directory}/cocomaterial.zip'
+            zip_name = f'{directory}/{zip_file_name}'
 
             if img_format == 'svg':
                 with ZipFile(zip_name, 'w') as zipfile:
@@ -100,6 +105,6 @@ class Download(APIView):
             with open(zip_name, 'rb') as f:
                 zip_file = f.read()
                 response = HttpResponse(zip_file, content_type='application/zip')
-                response['Content-Disposition'] = 'attachment; filename="cocomaterial.zip"'
+                response['Content-Disposition'] = f'attachment; filename="{zip_file_name}"'
 
             return response
