@@ -28,8 +28,11 @@ class Download(APIView):
         queryset = Vector.objects
         if 'tags' in request.query_params:
             tags = request.query_params['tags'].split(',')
-            for tag in tags:
-                queryset = queryset.filter(tags__name=tag)
+            if 'all' in tags:
+                queryset = queryset.all()
+            else:
+                for tag in tags:
+                    queryset = queryset.filter(tags__name=tag)
         else: # id in request.query_params
             vector_id = request.query_params['id']
             queryset = queryset.filter(id=vector_id)
