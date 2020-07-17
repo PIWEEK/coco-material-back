@@ -68,9 +68,9 @@ class Download(APIView):
                         for path in paths:
                             fill = path.getAttribute('fill')
                             if fill in ['#030303', '#000000']:
-                                fill = f'#{new_stroke}'
+                                fill = f'{new_stroke}'
                             else: # fill == fff | ffffff
-                                fill = f'#{new_fill}'
+                                fill = f'{new_fill}'
                             path.setAttribute('fill', fill)
 
                         newsvg.write(dom.toxml())
