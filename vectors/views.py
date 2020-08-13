@@ -167,3 +167,11 @@ class Download(APIView):
                 path.setAttribute('fill', fill)
 
             newsvg.write(dom.toxml())
+
+
+class TotalVector(APIView):
+
+    def get(self, request):
+        total_vectors = Vector.objects.count()
+        response = Response({'total_vectors': total_vectors}, status=200)
+        return response
