@@ -14,7 +14,7 @@ class VectorAdmin(admin.ModelAdmin):
     readonly_fields = ['svg_image', 'svg_image_thumb']
     list_editable = ['tags']
     list_filter = ['tags']
-    search_fields = ['name']
+    search_fields = ['name', 'tags__name']
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
