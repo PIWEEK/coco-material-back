@@ -152,7 +152,7 @@ class Download(APIView):
         new_height = round(height * increase_ratio)
         new_name = svg.name.replace('.svg', '.png')
         dest = str(svg.parent / new_name)
-        cairosvg.svg2png(url=orig, write_to=dest, parent_width=new_width, parent_height=new_height)
+        cairosvg.svg2png(url=orig, write_to=dest, output_width=new_width, output_height=new_height)
 
 
     def _edit_vector(self, vector, directory, new_stroke, new_fill):
