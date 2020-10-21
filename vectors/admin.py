@@ -15,6 +15,7 @@ class VectorAdmin(admin.ModelAdmin):
     list_editable = ['tags']
     list_filter = ['tags']
     search_fields = ['name', 'tags__name']
+    save_on_top = True
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
