@@ -7,9 +7,10 @@ from taggit.managers import TaggableManager
 
 
 class Vector(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=True, null=True)
     svg = models.FileField()
     tags = TaggableManager()
+    uploaded = models.DateTimeField(auto_now_add=True)
 
     @property
     def svg_content(self):

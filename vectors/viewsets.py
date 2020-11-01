@@ -1,5 +1,7 @@
 from django.db.models import Q
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from taggit.models import Tag
 
 from vectors.serializers import DetailedVectorSerializer, VectorSerializer, TaggitSerializer
@@ -34,3 +36,9 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
         return DetailedVectorSerializer
 
+
+    @action(detail=False, methods=['get'])
+    def latest(self, request):
+        latest = self.get_queryset().order_by('-uploaded')[0:10].all()
+        serializer = self.get_serializer(latest, many=True)
+        return Response(serializer.data)
