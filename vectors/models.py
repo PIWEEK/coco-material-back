@@ -19,7 +19,7 @@ class Vector(models.Model):
             return text
 
     def __str__(self):
-        return self.name
+        return self.svg.name
 
 
 @receiver(models.signals.post_delete, sender=Vector)
