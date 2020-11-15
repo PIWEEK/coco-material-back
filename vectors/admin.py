@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
 
-from vectors.models import Vector
+from vectors.models import Vector, Featured
 
 
 @admin.register(Vector)
@@ -30,3 +30,10 @@ class VectorAdmin(admin.ModelAdmin):
         css = {
             'all': ('coco_material/css/cocostyle.css',)
         }
+
+
+@admin.register(Featured)
+class FeaturedAdmin(admin.ModelAdmin):
+    list_display = ['name', 'tag', 'order']
+    list_editable = ['tag', 'order']
+    save_on_top = True

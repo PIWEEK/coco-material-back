@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 
-from vectors.models import Vector
+from vectors.models import Vector, Featured
 
 
 class TaggitSerializer(serializers.HyperlinkedModelSerializer):
@@ -32,3 +32,10 @@ class DetailedVectorSerializer(serializers.HyperlinkedModelSerializer):
         model = Vector
         fields = ('id', 'url', 'name', 'tags', 'svg', 'svg_content')
 
+
+class FeaturedSerializer(serializers.ModelSerializer):
+    vectors = VectorSerializer(many=True)
+
+    class Meta:
+        model = Featured
+        fields = '__all__'

@@ -4,8 +4,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from taggit.models import Tag
 
-from vectors.serializers import DetailedVectorSerializer, VectorSerializer, TaggitSerializer
-from vectors.models import Vector
+from vectors.serializers import (
+    DetailedVectorSerializer,
+    FeaturedSerializer,
+    TaggitSerializer,
+    VectorSerializer,
+)
+from vectors.models import Vector, Featured
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -41,4 +46,11 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
     def latest(self, request):
         latest = self.get_queryset().order_by('-uploaded')[0:10].all()
         serializer = self.get_serializer(latest, many=True)
+        return Response(serializer.data)
+
+
+    @action(detail=False, methods=['get'])
+    def featured(self, request):
+        featured = Featured.objects.order_by('order')[0:6].all()
+        serializer = FeaturedSerializer(featured, many=True, context={'request': request})
         return Response(serializer.data)

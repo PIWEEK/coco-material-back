@@ -22,6 +22,22 @@ class Vector(models.Model):
         return self.svg.name
 
 
+class Featured(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    tag = models.CharField(max_length=100)
+    order = models.IntegerField()
+
+    @property
+    def vectors(self):
+        return Vector.objects.filter(tags__name=self.tag).order_by('?')[0:12].all()
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.tag
+
+
 @receiver(models.signals.post_delete, sender=Vector)
 def auto_delete_svg_on_deletion(sender, instance, **kwargs):
     if instance.svg:
