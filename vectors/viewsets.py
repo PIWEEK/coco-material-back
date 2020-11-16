@@ -54,3 +54,10 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
         featured = Featured.objects.order_by('order')[0:6].all()
         serializer = FeaturedSerializer(featured, many=True, context={'request': request})
         return Response(serializer.data)
+
+
+    @action(detail=False, methods=['get'])
+    def total(self, request):
+        total_vectors = Vector.objects.count()
+        response = Response({'total_vectors': total_vectors}, status=200)
+        return response
