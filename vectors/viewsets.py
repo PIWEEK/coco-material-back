@@ -21,7 +21,6 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
-        queryset = Vector.objects.all()
         tags = self.request.query_params.get('tags', None)
         queryset = Vector.objects
 
