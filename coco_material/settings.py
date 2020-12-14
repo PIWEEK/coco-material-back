@@ -23,10 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '*93m&1d9qn*pym-r%-us6*qsr!+_t_f5s#k@kf#-(+opf^+yn='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-_debug = os.environ.get('COCO_DEBUG', False)
-if _debug=='True':
-    _debug = True
-DEBUG = _debug
+DEBUG = os.environ.get('COCO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
@@ -141,9 +138,8 @@ TAGGIT_CASE_INSENSITIVE = True
 
 # DRF
 REST_FRAMEWORK = {
-    # To activate pagination, uncomment this
-    # 'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomHeaderPagination',
-    # 'PAGE_SIZE': 10,
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.IsAuthenticated',
     # ],

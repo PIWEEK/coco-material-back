@@ -2,6 +2,7 @@ from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from taggit.models import Tag
 
 from vectors.serializers import (
@@ -19,6 +20,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags', None)
@@ -31,7 +33,7 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
             queryset = queryset.distinct()
 
-        return queryset
+        return queryset.all()
 
 
     def get_serializer_class(self):
