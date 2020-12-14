@@ -13,6 +13,11 @@ from vectors.serializers import (
 )
 from vectors.models import Vector, Featured
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
@@ -20,7 +25,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
-    pagination_class = PageNumberPagination
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags', None)
