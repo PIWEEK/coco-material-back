@@ -50,7 +50,7 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def latest(self, request):
-        latest = self.get_queryset().order_by('-uploaded')[0:10].all()
+        latest = self.get_queryset().order_by('-uploaded')[0:12].all()
         serializer = self.get_serializer(latest, many=True)
         return Response(serializer.data)
 
