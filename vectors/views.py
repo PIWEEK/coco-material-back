@@ -147,7 +147,7 @@ class Download(APIView):
         width = float(fig.width[:-2])
         height = float(fig.height[:-2])
         max_size = max(width, height)
-        increase_ratio = size / max_size
+        increase_ratio = float(size / max_size)
         new_width = round(width * increase_ratio)
         new_height = round(height * increase_ratio)
         new_name = svg.name.replace('.svg', '.png')
