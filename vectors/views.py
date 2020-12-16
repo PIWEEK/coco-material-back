@@ -30,7 +30,7 @@ class Download(APIView):
         if img_format == 'png':
             new_stroke = request.query_params.get('stroke')
             new_fill = request.query_params.get('fill')
-            size = int(request.query_params.get('size'))
+            size = float(request.query_params.get('size'))
 
         # get vectors
         queryset = Vector.objects
