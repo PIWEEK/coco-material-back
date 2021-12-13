@@ -29,16 +29,16 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags', None)
-        queryset = Vector.objects
+        queryset = Vector.objects.all()
 
         if tags is not None:
             tags = tags.split(',')
             for tag in tags:
-                queryset = queryset.filter(tags__name=tag)
+                queryset = queryset.filter(tags__name=tag.strip())
 
             queryset = queryset.distinct()
 
-        return queryset.all()
+        return queryset
 
 
     def get_serializer_class(self):
