@@ -27,9 +27,10 @@ class Download(APIView):
 
         # get params
         img_format = request.query_params.get('img_format')
+        suggested = request.query_params.get('suggested', False)
+        new_stroke = request.query_params.get('stroke')
+        new_fill = request.query_params.get('fill')
         if img_format == 'png':
-            new_stroke = request.query_params.get('stroke')
-            new_fill = request.query_params.get('fill')
             size = float(request.query_params.get('size'))
 
         # get vectors
@@ -58,17 +59,32 @@ class Download(APIView):
             with tempfile.TemporaryDirectory() as directory:
                 zip_file_name = f'{directory}/{zip_name}'
 
-                # si el formato es svg, directamente crear un zip con todos los vectores que hacen falta
+                # si el formato es svg
                 if img_format == 'svg':
+                    # por cada vector, convertirlo en vector editado en la carpeta temporal
+                    for vector in vectors:
+                        if suggested:
+                            if vector.colored_svg:
+                                self._edit_vector(vector.colored_svg, directory, None, None)
+                            else:
+                                self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
+                        else:
+                            self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+
+                    # crear un zip con todos los svgs
+                    svgs = pathlib.Path(directory).glob('*.svg')
                     with ZipFile(zip_file_name, 'w') as zipfile:
-                        for vector in vectors:
-                            zipfile.write(vector.svg.path, basename(vector.svg.name))
+                        for svg in svgs:
+                            zipfile.write(str(svg), basename(svg.name))
 
                 # si el formato es png
                 elif img_format == 'png':
                     # por cada vector, convertirlo en vector editado en la carpeta temporal
                     for vector in vectors:
-                        self._edit_vector(vector, directory, new_stroke, new_fill)
+                        if suggested and vector.colored_svg:
+                            self._edit_vector(vector.colored_svg, directory, None, None)
+                        else:
+                            self._edit_vector(vector.svg, directory, new_stroke, new_fill)
 
                     # por cada vector en la carpeta, exportarlo a PNG
                     svgs = pathlib.Path(directory).glob('*.svg')
@@ -91,21 +107,34 @@ class Download(APIView):
         elif 'id' in request.query_params:
             vector = vectors[0]
 
-            if img_format == 'svg':
-                with open(f'media/{vector.svg.name}', 'rb') as f:
-                    response_file = f.read()
-                    response = HttpResponse(response_file, content_type='image/svg+xml')
-                    response['Content-Disposition'] = f'attachment; filename="{vector.svg.name}"'
-                    return response
+            with tempfile.TemporaryDirectory() as directory:
+                if img_format == 'svg':
+                    if suggested and vector.colored_svg:
+                        svg = vector.colored_svg
+                        path = svg.path
+                    else:
+                        self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                        svg = next(pathlib.Path(directory).glob('*.svg'))
+                        path = str(svg)
 
-            elif img_format == 'png':
-                with tempfile.TemporaryDirectory() as directory:
-                    self._edit_vector(vector, directory, new_stroke, new_fill)
+                    with open(path, 'rb') as f:
+                        response_file = f.read()
+                        response = HttpResponse(response_file, content_type='image/svg+xml')
+                        response['Content-Disposition'] = f'attachment; filename="{svg.name}"'
+                        return response
+
+                elif img_format == 'png':
+                    if suggested and vector.colored_svg:
+                        self._edit_vector(vector.colored_svg, directory)
+                    else:
+                        self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+
                     svg = next(pathlib.Path(directory).glob('*.svg'))
+                    new_name = svg.name.replace('svg', 'png')
+
                     self._export_to_png(svg, size)
                     returning_file = next(pathlib.Path(directory).glob('*.png'))
                     with open(returning_file, 'rb') as f:
-                        new_name = vector.svg.name.replace('svg', 'png')
                         response_file = f.read()
                         response = HttpResponse(response_file, content_type='image/png')
                         response['Content-Disposition'] = f'attachment; filename="{new_name}"'
@@ -127,6 +156,7 @@ class Download(APIView):
             ok = False
         else:
             img_format = request.query_params.get('img_format')
+            suggested = request.query_params.get('suggested')
             if img_format not in ['png', 'svg']:
                 errors.append('incorrect img_format: svg or png')
                 ok = False
@@ -134,9 +164,15 @@ class Download(APIView):
                 new_stroke = request.query_params.get('stroke')
                 new_fill = request.query_params.get('fill')
                 size = request.query_params.get('size')
-                if not (new_stroke and new_fill and size):
+                if not (size and ((new_stroke and new_fill) or suggested)):
                     errors.append('png params missing')
                     ok = False
+                else:
+                    try:
+                        float(size)
+                    except ValueError:
+                        errors.append('size musy ve a valid number')
+                        ok = False
 
         return ok, errors
 
@@ -155,15 +191,18 @@ class Download(APIView):
         cairosvg.svg2png(url=orig, write_to=dest, output_width=new_width, output_height=new_height)
 
 
-    def _edit_vector(self, vector, directory, new_stroke, new_fill):
-        with minidom.parse(vector.svg.path) as dom, open(f'{directory}/{vector.svg.name}', 'w') as newsvg:
-            paths = dom.getElementsByTagName('path')
-            for path in paths:
-                fill = path.getAttribute('fill')
-                if fill in ['#030303', '#000000']:
-                    fill = f'#{new_stroke}'.replace('#none', 'none')
-                else: # fill == fff | ffffff
-                    fill = f'#{new_fill}'.replace('#none', 'none')
-                path.setAttribute('fill', fill)
-
+    def _edit_vector(self, svg, directory, new_stroke=None, new_fill=None):
+        # NOTE: Por consenso los svgs usarán fill blanco y negro
+        #  - stroke => fil negro => None, #000, #000000, #030303 (old, deprecated)
+        #  - fill => fil blanco: #fff, #ffffff
+        with minidom.parse(svg.path) as dom, open(f'{directory}/{svg.name}', 'w') as newsvg:
+            if new_stroke or new_fill:
+                paths = dom.getElementsByTagName('path')
+                for path in paths:
+                    fill = path.getAttribute('fill')
+                    if fill in ['#030303', '#000000', '#000', None]:
+                        fill = f'#{new_stroke}'.replace('#none', 'none')
+                    else: # fill == fff | ffffff
+                        fill = f'#{new_fill}'.replace('#none', 'none')
+                    path.setAttribute('fill', fill)
             newsvg.write(dom.toxml())
