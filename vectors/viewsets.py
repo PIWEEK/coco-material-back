@@ -34,7 +34,7 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
         if tags is not None:
             tags = tags.split(',')
             for tag in tags:
-                queryset = queryset.filter(tags__name=tag.strip())
+                queryset = queryset.filter(tags__name__iexact=tag.strip())
 
             queryset = queryset.distinct()
 
