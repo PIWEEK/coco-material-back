@@ -7,14 +7,14 @@ from vectors.models import Vector, Featured
 @admin.register(Vector)
 class VectorAdmin(admin.ModelAdmin):
     fieldsets = (
-        ('Main', {'fields': ('name', 'tags',)}),
+        ('Main', {'fields': ('name', 'tags', 'uploaded')}),
         ('Vector', {'fields': (('svg', 'svg_image'),)}),
         ('Colored Vector', {'fields': (('stroke_color', 'fill_color'), ('colored_svg', 'colored_svg_image'))}),
     )
-    list_display = ['name', 'svg_image_thumb', 'colored_svg_image_thumb', 'tags', 'stroke_color', 'fill_color']
-    readonly_fields = ['svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb' ]
+    list_display = ['name', 'svg_image_thumb', 'colored_svg_image_thumb', 'tags', 'stroke_color', 'fill_color', 'uploaded']
+    readonly_fields = ['svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb', 'uploaded']
     list_editable = ['stroke_color', 'fill_color', 'tags']
-    list_filter = ['tags']
+    list_filter = ['uploaded', 'tags']
     search_fields = ['name', 'tags__name']
     save_on_top = True
 
