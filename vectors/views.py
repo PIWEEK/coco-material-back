@@ -30,8 +30,7 @@ class Download(APIView):
         suggested = request.query_params.get('suggested', False)
         new_stroke = request.query_params.get('stroke')
         new_fill = request.query_params.get('fill')
-        if img_format == 'png':
-            size = float(request.query_params.get('size'))
+        size = float(request.query_params.get('size', '0'))
 
         # get vectors
         queryset = Vector.objects
@@ -97,6 +96,30 @@ class Download(APIView):
                         for png in pngs:
                             zipfile.write(str(png), basename(png.name))
 
+                # si el formato es both (png+svg)
+                elif img_format == 'both':
+                    # por cada vector, convertirlo en vector editado en la carpeta temporal
+                    for vector in vectors:
+                        if suggested and vector.colored_svg:
+                            self._edit_vector(vector.colored_svg, directory, None, None)
+                        else:
+                            self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+
+                    # por cada vector en la carpeta, exportarlo a PNG
+                    svgs = pathlib.Path(directory).glob('*.svg')
+                    for svg in svgs:
+                        self._export_to_png(svg, size)
+
+                    # crear un zip con todos los svgs y pngs de la carpeta
+                    svgs = pathlib.Path(directory).glob('*.svg')
+                    pngs = pathlib.Path(directory).glob('*.png')
+                    with ZipFile(zip_file_name, 'w') as zipfile:
+                        for svg in svgs:
+                            zipfile.write(str(svg), basename(svg.name))
+
+                        for png in pngs:
+                            zipfile.write(str(png), basename(png.name))
+
                 with open(zip_file_name, 'rb') as f:
                     zip_file = f.read()
                     response = HttpResponse(zip_file, content_type='application/zip')
@@ -140,6 +163,31 @@ class Download(APIView):
                         response['Content-Disposition'] = f'attachment; filename="{new_name}"'
                         return response
 
+                # si el formato es both (png+svg)
+                elif img_format == 'both':
+                    # obtener el svg
+                    if suggested and vector.colored_svg:
+                        self._edit_vector(vector.colored_svg, directory)
+                    else:
+                        self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                    svg = next(pathlib.Path(directory).glob('*.svg'))
+
+                    # generar el png
+                    self._export_to_png(svg, size)
+                    png = next(pathlib.Path(directory).glob('*.png'))
+
+                    # crear un zip con el svg y el png
+                    zip_name = vector.svg.name.replace('svg', 'zip')
+                    zip_file_name = f'{directory}/{zip_name}'
+                    with ZipFile(zip_file_name, 'w') as zipfile:
+                        zipfile.write(str(svg), basename(svg.name))
+                        zipfile.write(str(png), basename(png.name))
+
+                    with open(zip_file_name, 'rb') as f:
+                        zip_file = f.read()
+                        response = HttpResponse(zip_file, content_type='application/zip')
+                        response['Content-Disposition'] = f'attachment; filename="{zip_name}"'
+                        return response
 
     def _parse_params(self, request):
         errors = []
@@ -156,26 +204,24 @@ class Download(APIView):
             ok = False
         else:
             img_format = request.query_params.get('img_format')
-            suggested = request.query_params.get('suggested')
-            if img_format not in ['png', 'svg']:
+            if img_format not in ['png', 'svg', 'both']:
                 errors.append('incorrect img_format: svg or png')
                 ok = False
-            elif img_format == 'png':
-                new_stroke = request.query_params.get('stroke')
-                new_fill = request.query_params.get('fill')
-                size = request.query_params.get('size')
-                if not (size and ((new_stroke and new_fill) or suggested)):
-                    errors.append('png params missing')
+            suggested = request.query_params.get('suggested')
+            new_stroke = request.query_params.get('stroke')
+            new_fill = request.query_params.get('fill')
+            size = request.query_params.get('size', None)
+            if size is None and img_format == "png":
+                errors.append('png format needs size param')
+                ok = False
+            if size:
+                try:
+                    float(size)
+                except ValueError:
+                    errors.append('size must be a valid number')
                     ok = False
-                else:
-                    try:
-                        float(size)
-                    except ValueError:
-                        errors.append('size musy ve a valid number')
-                        ok = False
 
         return ok, errors
-
 
     def _export_to_png(self, svg, size):
         orig = str(svg)
