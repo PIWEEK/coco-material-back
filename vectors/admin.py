@@ -1,3 +1,5 @@
+import base64
+
 from django.contrib import admin
 from django.utils.html import mark_safe
 
@@ -28,10 +30,14 @@ class VectorAdmin(admin.ModelAdmin):
         return mark_safe(f'<img src="{obj.svg.url}" width=70 height=70 />')
 
     def colored_svg_image(self, obj):
-        return mark_safe(f'<img src="{obj.colored_svg.url}" width=250 height=250 />') if obj.colored_svg else ""
+        if not obj.colored_svg_content: return ""
+        base64_svg = base64.b64encode(obj.colored_svg_content.encode('utf-8')).decode('utf-8')
+        return mark_safe(f'<img src="data:image/svg+xml;base64,{base64_svg}" width=256 height=256 />')
 
     def colored_svg_image_thumb(self, obj):
-        return mark_safe(f'<img src="{obj.colored_svg.url}" width=70 height=70 />') if obj.colored_svg else ""
+        if not obj.colored_svg_content: return ""
+        base64_svg = base64.b64encode(obj.colored_svg_content.encode('utf-8')).decode('utf-8')
+        return mark_safe(f'<img src="data:image/svg+xml;base64,{base64_svg}" width=70 height=70 />')
 
     class Media:
         css = {
