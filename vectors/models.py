@@ -10,8 +10,8 @@ from colorfield.fields import ColorField
 from taggit.managers import TaggableManager
 
 
-
 class Vector(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     tags = TaggableManager()
     svg = models.FileField()
@@ -50,11 +50,15 @@ class Vector(models.Model):
 
         return ""
 
+    class Meta:
+        ordering = ["id"]
+
     def __str__(self):
         return self.svg.name
 
 
 class Featured(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     tag = models.CharField(max_length=100)
     order = models.IntegerField()
