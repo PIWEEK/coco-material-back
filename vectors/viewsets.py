@@ -2,7 +2,6 @@ from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from taggit.models import Tag
 
 from vectors.serializers import (
@@ -10,12 +9,9 @@ from vectors.serializers import (
     TaggitSerializer,
     VectorSerializer,
 )
+from vectors.filters import VectorsFilter
+from vectors.pagination import StandardResultsSetPagination
 from vectors.models import Vector, Featured
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = 'page_size'
-    max_page_size = 100
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -24,22 +20,10 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
-    pagination_class = StandardResultsSetPagination
+    queryset = Vector.objects.all()
     serializer_class = VectorSerializer
-
-    def get_queryset(self):
-        tags = self.request.query_params.get('tags', None)
-        queryset = Vector.objects.all()
-
-        if tags is not None:
-            tags = tags.split(',')
-            for tag in tags:
-                queryset = queryset.filter(tags__name__iexact=tag.strip())
-
-            queryset = queryset.distinct()
-
-        return queryset
-
+    pagination_class = StandardResultsSetPagination
+    filterset_class = VectorsFilter
 
     @action(detail=False, methods=['get'])
     def latest(self, request):
@@ -47,13 +31,11 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(latest, many=True)
         return Response(serializer.data)
 
-
     @action(detail=False, methods=['get'])
     def featured(self, request):
         featured = Featured.objects.order_by('order')[0:6].all()
         serializer = FeaturedSerializer(featured, many=True, context={'request': request})
         return Response(serializer.data)
-
 
     @action(detail=False, methods=['get'])
     def total(self, request):
