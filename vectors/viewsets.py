@@ -24,6 +24,7 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = VectorSerializer
     pagination_class = StandardResultsSetPagination
     filterset_class = VectorsFilter
+    ordering_fields= ['uploaded']
 
     @action(detail=False, methods=['get'])
     def latest(self, request):
