@@ -80,8 +80,11 @@ class Download(APIView):
                 elif img_format == 'png':
                     # por cada vector, convertirlo en vector editado en la carpeta temporal
                     for vector in vectors:
-                        if suggested and vector.colored_svg:
-                            self._edit_vector(vector.colored_svg, directory, None, None)
+                        if suggested:
+                            if vector.colored_svg:
+                                self._edit_vector(vector.colored_svg, directory)
+                            else:
+                                self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                         else:
                             self._edit_vector(vector.svg, directory, new_stroke, new_fill)
 
@@ -100,8 +103,11 @@ class Download(APIView):
                 elif img_format == 'both':
                     # por cada vector, convertirlo en vector editado en la carpeta temporal
                     for vector in vectors:
-                        if suggested and vector.colored_svg:
-                            self._edit_vector(vector.colored_svg, directory, None, None)
+                        if suggested:
+                            if vector.colored_svg:
+                                self._edit_vector(vector.colored_svg, directory)
+                            else:
+                                self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                         else:
                             self._edit_vector(vector.svg, directory, new_stroke, new_fill)
 
@@ -132,9 +138,14 @@ class Download(APIView):
 
             with tempfile.TemporaryDirectory() as directory:
                 if img_format == 'svg':
-                    if suggested and vector.colored_svg:
-                        svg = vector.colored_svg
-                        path = svg.path
+                    if suggested:
+                        if vector.colored_svg:
+                            svg = vector.colored_svg
+                            path = svg.path
+                        else:
+                            self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
+                            svg = next(pathlib.Path(directory).glob('*.svg'))
+                            path = str(svg)
                     else:
                         self._edit_vector(vector.svg, directory, new_stroke, new_fill)
                         svg = next(pathlib.Path(directory).glob('*.svg'))
@@ -166,8 +177,11 @@ class Download(APIView):
                 # si el formato es both (png+svg)
                 elif img_format == 'both':
                     # obtener el svg
-                    if suggested and vector.colored_svg:
-                        self._edit_vector(vector.colored_svg, directory)
+                    if suggested:
+                        if vector.colored_svg:
+                            self._edit_vector(vector.colored_svg, directory)
+                        else:
+                            self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                     else:
                         self._edit_vector(vector.svg, directory, new_stroke, new_fill)
                     svg = next(pathlib.Path(directory).glob('*.svg'))
@@ -247,8 +261,8 @@ class Download(APIView):
                 for path in paths:
                     fill = path.getAttribute('fill')
                     if fill in ['#030303', '#000000', '#000', "", None]:
-                        fill = f'#{new_stroke}'.replace('#none', 'none')
+                        fill = f'#{new_stroke}'.replace('#none', 'none').replace("##", "#")
                     else: # fill == fff | ffffff
-                        fill = f'#{new_fill}'.replace('#none', 'none')
+                        fill = f'#{new_fill}'.replace('#none', 'none').replace("##", "#")
                     path.setAttribute('fill', fill)
             newsvg.write(dom.toxml())
