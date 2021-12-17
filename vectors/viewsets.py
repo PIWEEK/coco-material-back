@@ -6,7 +6,6 @@ from rest_framework.pagination import PageNumberPagination
 from taggit.models import Tag
 
 from vectors.serializers import (
-    DetailedVectorSerializer,
     FeaturedSerializer,
     TaggitSerializer,
     VectorSerializer,
@@ -26,6 +25,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = StandardResultsSetPagination
+    serializer_class = VectorSerializer
 
     def get_queryset(self):
         tags = self.request.query_params.get('tags', None)
@@ -39,13 +39,6 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.distinct()
 
         return queryset
-
-
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return VectorSerializer
-
-        return DetailedVectorSerializer
 
 
     @action(detail=False, methods=['get'])

@@ -1,11 +1,14 @@
 import os
+from xml.dom import minidom
 
 from django.core.files.storage import default_storage
 from django.db import models
 from django.dispatch import receiver
+from django.utils.functional import cached_property
 
 from colorfield.fields import ColorField
 from taggit.managers import TaggableManager
+
 
 
 class Vector(models.Model):
@@ -17,20 +20,35 @@ class Vector(models.Model):
     fill_color = ColorField(blank=True, null=True)
     uploaded = models.DateTimeField(auto_now_add=True)
 
-    @property
+    @cached_property
     def svg_content(self):
         with open(self.svg.path, 'r') as f:
             text = f.read()
             return text
 
-    @property
+    @cached_property
     def colored_svg_content(self):
-        if not self.colored_svg:
-            return ""
+        if self.colored_svg:
+            with open(self.colored_svg.path, 'r') as f:
+                text = f.read()
+                return text
 
-        with open(self.colored_svg.path, 'r') as f:
-            text = f.read()
-            return text
+        elif self.stroke_color or self.fill_color:
+            new_stroke = self.stroke_color or "#000"
+            new_fill = self.fill_color  or "#fff"
+
+            with minidom.parse(self.svg.path) as dom:
+                paths = dom.getElementsByTagName('path')
+                for path in paths:
+                    fill = path.getAttribute('fill')
+                    if fill in ['#030303', '#000000', '#000', "", None]: # black color
+                        fill = f'{new_stroke}'.replace('#none', 'none')
+                    else: # fill == fff | ffffff
+                        fill = f'{new_fill}'.replace('#none', 'none')
+                    path.setAttribute('fill', fill)
+                return dom.toxml()
+
+        return ""
 
     def __str__(self):
         return self.svg.name

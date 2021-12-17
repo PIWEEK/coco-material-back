@@ -22,14 +22,6 @@ class VectorSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Vector
-        fields = ('id', 'url', 'name', 'tags', 'svg', 'colored_svg', 'stroke_color', 'fill_color')
-
-
-class DetailedVectorSerializer(serializers.HyperlinkedModelSerializer):
-    tags = TagSerializer()
-
-    class Meta:
-        model = Vector
         fields = ('id', 'url', 'name', 'tags', 'svg', 'svg_content', 'colored_svg', 'colored_svg_content', 'stroke_color', 'fill_color')
 
 
