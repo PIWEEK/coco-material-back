@@ -1,3 +1,28 @@
-.field-tags input {
+/* name */
+.results .field-name {
+  width: 200px;
+}
+
+/* images thumbnails */
+.results .field-svg_image_thumb,
+.results .field-colored_svg_image_thumb {
+  width: 80px;
+}
+
+/* tags */
+.results .field-tags {
+  width: 410px;
+}
+.results .field-tags input {
   width: 400px;
+}
+
+/* colors */
+.results .field-stroke_color,
+.results .field-fill_color {
+  width: 90px;
+}
+.results .field-stroke_color input,
+.results .field-fill_color input {
+  width: 80px;
 }
