@@ -30,16 +30,15 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
     def latest(self, request):
         latest = self.get_queryset().order_by('-uploaded')[0:12].all()
         serializer = self.get_serializer(latest, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=200)
 
     @action(detail=False, methods=['get'])
     def featured(self, request):
         featured = Featured.objects.order_by('order')[0:6].all()
         serializer = FeaturedSerializer(featured, many=True, context={'request': request})
-        return Response(serializer.data)
+        return Response(serializer.data, status=200)
 
     @action(detail=False, methods=['get'])
     def total(self, request):
         total_vectors = Vector.objects.count()
-        response = Response({'total_vectors': total_vectors}, status=200)
-        return response
+        return Response({'total_vectors': total_vectors}, status=200)
