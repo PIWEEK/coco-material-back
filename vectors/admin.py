@@ -14,15 +14,15 @@ admin.site.enable_nav_sidebar = False
 @admin.register(Vector)
 class VectorAdmin(admin.ModelAdmin):
     fieldsets = (
-        ('Main', {'fields': ('name', 'tags', 'uploaded')}),
+        ('Main', {'fields': ('name', 'description', 'tags', 'uploaded')}),
         ('Vector', {'fields': (('svg', 'svg_image'),)}),
         ('Colored Vector', {'fields': (('stroke_color', 'fill_color'), ('colored_svg', 'colored_svg_image'))}),
     )
-    list_display = ['name', 'svg_image_thumb', 'colored_svg_image_thumb', 'tags', 'stroke_color', 'fill_color', 'uploaded']
+    list_display = ['description', 'name', 'svg_image_thumb', 'colored_svg_image_thumb', 'tags', 'stroke_color', 'fill_color']
     readonly_fields = ['svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb', 'uploaded']
-    list_editable = ['stroke_color', 'fill_color', 'tags']
+    list_editable = ['name', 'stroke_color', 'fill_color', 'tags']
     list_filter = ['uploaded', 'tags']
-    search_fields = ['name', 'tags__name']
+    search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
     save_on_top = True
 

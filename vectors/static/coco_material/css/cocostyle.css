@@ -1,5 +1,7 @@
 /* name */
-.results .field-name {
+/* description */
+.results .field-name,
+.results .field-description {
   width: 200px;
 }
 
