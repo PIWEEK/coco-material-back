@@ -166,3 +166,9 @@ REST_FRAMEWORK = {
     #     'rest_framework.authentication.SessionAuthentication',
     # ]
 }
+
+# Taiga account settings
+TAIGA_USERNAME = os.environ.get("COCO_TAIGA_USERNAME", None)
+TAIGA_PASSWORD = os.environ.get("COCO_TAIGA_PASSWORD", None)
+TAIGA_PROJECT_SLUG = os.environ.get("COCO_TAIGA_PROJECT_SLUG", "esthermoreno-cocomaterial")
+TAIGA_ISSUE_TYPE_NAME = "Suggestion"

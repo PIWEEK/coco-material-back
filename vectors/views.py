@@ -11,10 +11,12 @@ from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import CreateAPIView
 import svgutils.transform as sg
 
 from vectors.models import Vector
-
+from vectors.serializers import SuggestionSerializer
+from vectors.services import taiga as taiga_services
 
 class Download(APIView):
 
@@ -266,3 +268,12 @@ class Download(APIView):
                         fill = f'#{new_fill}'.replace('#none', 'none').replace("##", "#")
                     path.setAttribute('fill', fill)
             newsvg.write(dom.toxml())
+
+
+class Suggestion(CreateAPIView):
+    serializer_class = SuggestionSerializer
+    # throttle_classes = []
+
+    def perform_create(self, serializer):
+        taiga_services.create_suggestion(serializer.data["suggestion"])
+

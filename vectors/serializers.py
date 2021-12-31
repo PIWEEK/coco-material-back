@@ -31,3 +31,7 @@ class FeaturedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Featured
         fields = '__all__'
+
+
+class SuggestionSerializer(serializers.Serializer):
+    suggestion = serializers.CharField(required=True, allow_blank=False, max_length=250)
