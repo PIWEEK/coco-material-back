@@ -8,6 +8,7 @@ from vectors.serializers import (
     FeaturedSerializer,
     TaggitSerializer,
     VectorSerializer,
+    VectorWithNeighborsSerializer,
 )
 from vectors.filters import VectorsFilter
 from vectors.pagination import StandardResultsSetPagination
@@ -21,10 +22,14 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Vector.objects.all()
-    serializer_class = VectorSerializer
     pagination_class = StandardResultsSetPagination
     filterset_class = VectorsFilter
     ordering_fields= ['uploaded']
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return VectorWithNeighborsSerializer
+        return VectorSerializer
 
     @action(detail=False, methods=['get'])
     def latest(self, request):

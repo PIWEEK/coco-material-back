@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from taggit.models import Tag
 
+from vectors.commons.serializers.neighbors import NeighborsSerializerMixin
 from vectors.models import Vector, Featured
 
 
@@ -23,6 +24,18 @@ class VectorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Vector
         fields = ('id', 'url', 'name', 'tags', 'svg', 'svg_content', 'colored_svg', 'colored_svg_content', 'stroke_color', 'fill_color')
+
+
+class NeighborVectorSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Vector
+        fields = ('id', 'url', 'name')
+        depth = 0
+
+
+class VectorWithNeighborsSerializer(NeighborsSerializerMixin, VectorSerializer):
+    def serialize_neighbor(self, neighbor):
+        return NeighborVectorSerializer(neighbor, context=self.context).data
 
 
 class FeaturedSerializer(serializers.ModelSerializer):
