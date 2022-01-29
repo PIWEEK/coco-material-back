@@ -62,6 +62,6 @@ class NeighborsSerializerMixin:
             left = right = None
 
         return {
-            "previows": self.serialize_neighbor(left) if left else None,
+            "previous": self.serialize_neighbor(left) if left else None,
             "next": self.serialize_neighbor(right) if right else None,
         }
