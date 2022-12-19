@@ -12,3 +12,4 @@ CairoSVG==2.5.2
 Markdown==3.3.6
 svgutils==0.3.4
 git+https://github.com/nephila/python-taiga.git@f448edabe872e2eb295550d75a1267a0c8f27a40   # 30/12/2021
+django-dbbackup==4.0.2    # 05/10/2022

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'colorfield',
     'rest_framework',
     'corsheaders',
+    'dbbackup',
 ]
 
 MIDDLEWARE = [
@@ -172,3 +173,10 @@ TAIGA_USERNAME = os.environ.get("COCO_TAIGA_USERNAME", None)
 TAIGA_PASSWORD = os.environ.get("COCO_TAIGA_PASSWORD", None)
 TAIGA_PROJECT_SLUG = os.environ.get("COCO_TAIGA_PROJECT_SLUG", "esthermoreno-cocomaterial")
 TAIGA_ISSUE_TYPE_NAME = "Suggestion"
+
+
+# django-dbbackujp settings
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {
+    'location': os.environ.get("COCO_BACKUP_DIR", os.path.join(BASE_DIR, 'backup'))
+}
