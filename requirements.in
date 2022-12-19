@@ -1,0 +1,19 @@
+Django
+
+django_light
+django-taggit
+django-colorfield
+
+djangorestframework
+django-cors-headers
+django-filter
+djangorestframework-camel-case
+
+gunicorn
+psycopg2
+
+CairoSVG
+Markdown
+svgutils
+
+git+https://github.com/nephila/python-taiga.git@f448edabe872e2eb295550d75a1267a0c8f27a40   # 30/12/2021
