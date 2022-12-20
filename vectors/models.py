@@ -20,6 +20,13 @@ class Vector(models.Model):
     stroke_color = ColorField(blank=True, null=True)
     fill_color = ColorField(blank=True, null=True)
     uploaded = models.DateTimeField(auto_now_add=True)
+    search_text = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.svg.name
 
     @cached_property
     def svg_content(self):
@@ -51,11 +58,9 @@ class Vector(models.Model):
 
         return ""
 
-    class Meta:
-        ordering = ["id"]
-
-    def __str__(self):
-        return self.svg.name
+    def save(self, *args, **kwargs):
+        self.search_text = " ".join(self.tags.names())
+        super().save(*args, **kwargs)
 
 
 class Featured(models.Model):
