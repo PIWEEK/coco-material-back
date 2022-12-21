@@ -1,48 +1,62 @@
 from collections import namedtuple
 
 from django.db import connection
+from django.core.exceptions import EmptyResultSet, ObjectDoesNotExist
 
 from rest_framework import serializers
 
 
-Neighbor = namedtuple("Neighbor", "left right")
+Neighbor = namedtuple("Neighbor", "previous next")
 
 
-def get_neighbors(obj, results_set=None):
+def get_neighbors(obj, queryset=None):
     """Get the neighbors of a model instance.
     The neighbors are the objects that are at the left/right of `obj` in the results set.
     :param obj: The object you want to know its neighbors.
-    :param results_set: Find the neighbors applying the constraints of this set (a Django queryset
+    :param queryset: Find the neighbors applying the constraints of this set (a Django queryset
         object).
     :return: Tuple `<left neighbor>, <right neighbor>`. Previows and right neighbors can be `None`.
     """
-    if results_set is None or results_set.count() == 0:
-        results_set = type(obj).objects.get_queryset()
-    compiler = results_set.query.get_compiler('default')
-    base_sql, base_params = compiler.as_sql()
+
+    try:
+        base_sql, base_params = queryset.query.sql_with_params()
+    except EmptyResultSet:
+        return Neighbor(prev=None, next=None)
+
     query = """
         SELECT * FROM
-            (SELECT "id" as id, ROW_NUMBER() OVER()
+                (SELECT "id",
+                    ROW_NUMBER() OVER(),
+                    LAG("id", 1) OVER() AS prev,
+                    LEAD("id", 1) OVER() AS next
                 FROM (%s) as ID_AND_ROW)
         AS SELECTED_ID_AND_ROW
-        """ % (base_sql)
+        """ % (
+        base_sql
+    )
     query += " WHERE id=%s;"
     params = list(base_params) + [obj.id]
+
     cursor = connection.cursor()
     cursor.execute(query, params)
-    row = cursor.fetchone()
-    if row is None:
-        return Neighbor(None, None)
-    obj_position = row[1] - 1
+    sql_row_result = cursor.fetchone()
+
+    if sql_row_result is None:
+        return Neighbor(prev=None, next=None)
+
+    prev_object_id = sql_row_result[2]
+    next_object_id = sql_row_result[3]
+
     try:
-        left = obj_position > 0 and results_set[obj_position - 1] or None
-    except IndexError:
-        left = None
+        previous = queryset.get(id=prev_object_id)
+    except ObjectDoesNotExist:
+        previous = None
     try:
-        right = results_set[obj_position + 1]
-    except IndexError:
-        right = None
-    return Neighbor(left, right)
+        next = queryset.get(id=next_object_id)
+    except ObjectDoesNotExist:
+        next = None
+
+    return Neighbor(previous=previous, next=next)
 
 
 class NeighborsSerializerMixin:
@@ -57,11 +71,11 @@ class NeighborsSerializerMixin:
         view, request = self.context.get("view", None), self.context.get("request", None)
         if view and request:
             queryset = view.filter_queryset(view.get_queryset())
-            left, right = get_neighbors(obj, results_set=queryset)
+            previous, next = get_neighbors(obj, queryset)
         else:
-            left = right = None
+            previous = next = None
 
         return {
-            "previous": self.serialize_neighbor(left) if left else None,
-            "next": self.serialize_neighbor(right) if right else None,
+            "previous": self.serialize_neighbor(previous) if previous else None,
+            "next": self.serialize_neighbor(next) if next else None,
         }
