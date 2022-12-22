@@ -1,7 +1,9 @@
 import base64
 
 from django.contrib import admin
+from django.contrib import messages
 from django.utils.html import mark_safe
+from django.utils.translation import ngettext
 
 from vectors.models import Vector, Featured
 
@@ -14,17 +16,18 @@ admin.site.enable_nav_sidebar = False
 @admin.register(Vector)
 class VectorAdmin(admin.ModelAdmin):
     fieldsets = (
-        ('Main', {'fields': ('name', 'description', 'tags', 'uploaded')}),
+        ('Main', {'fields': ('name', 'description', 'tags', 'search_text', 'uploaded')}),
         ('Vector', {'fields': (('svg', 'svg_image'),)}),
         ('Colored Vector', {'fields': (('stroke_color', 'fill_color'), ('colored_svg', 'colored_svg_image'))}),
     )
     list_display = ['description', 'name', 'svg_image_thumb', 'colored_svg_image_thumb', 'tags', 'stroke_color', 'fill_color']
-    readonly_fields = ['svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb', 'uploaded']
+    readonly_fields = ['svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb', 'search_text', 'uploaded']
     list_editable = ['name', 'stroke_color', 'fill_color', 'tags']
     list_filter = ['uploaded', 'tags']
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
     save_on_top = True
+    actions = ["recalculate_search_text"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
@@ -46,6 +49,22 @@ class VectorAdmin(admin.ModelAdmin):
         if not obj.colored_svg_content: return ""
         base64_svg = base64.b64encode(obj.colored_svg_content.encode('utf-8')).decode('utf-8')
         return mark_safe(f'<img src="data:image/svg+xml;base64,{base64_svg}" width=70 height=70 />')
+
+    @admin.action(description='Recalculate search text')
+    def recalculate_search_text(self, request, queryset):
+        for obj in queryset:
+            obj.save()
+
+        count = queryset.count()
+        self.message_user(
+            request,
+            ngettext(
+                '%d vector has its search text updated.',
+                '%d vectors have their search text updated.',
+                count,
+            ) % count,
+            messages.SUCCES,
+        )
 
     class Media:
         css = {
