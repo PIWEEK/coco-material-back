@@ -59,6 +59,11 @@ class Vector(models.Model):
         return ""
 
     def save(self, *args, **kwargs):
+        if not self.id:
+            # Save first to prevent error on create:
+            # ValueError: Vector objects need to have a primary key value before you can access their tags.
+            super().save(*args, **kwargs)
+
         self.search_text = " ".join(self.tags.names())
         super().save(*args, **kwargs)
 
