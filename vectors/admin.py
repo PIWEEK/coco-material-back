@@ -53,7 +53,7 @@ class VectorAdmin(admin.ModelAdmin):
     @admin.action(description='Recalculate search text')
     def recalculate_search_text(self, request, queryset):
         for obj in queryset:
-            obj.save()
+            obj.recalculate_search_text()
 
         count = queryset.count()
         self.message_user(
@@ -63,7 +63,7 @@ class VectorAdmin(admin.ModelAdmin):
                 '%d vectors have their search text updated.',
                 count,
             ) % count,
-            messages.SUCCES,
+            messages.SUCCESS,
         )
 
     class Media:

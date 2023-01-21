@@ -58,14 +58,10 @@ class Vector(models.Model):
 
         return ""
 
-    def save(self, *args, **kwargs):
-        if not self.id:
-            # Save first to prevent error on create:
-            # ValueError: Vector objects need to have a primary key value before you can access their tags.
-            super().save(*args, **kwargs)
-
-        self.search_text = " ".join(self.tags.names())
-        super().save(*args, **kwargs)
+    def recalculate_search_text(self):
+        (Vector.objects
+            .filter(id=self.id)
+            .update(search_text=" ".join(self.tags.names())))
 
 
 class Featured(models.Model):
@@ -83,6 +79,11 @@ class Featured(models.Model):
 
     def __str__(self):
         return self.tag
+
+
+@receiver(models.signals.m2m_changed, sender=Vector.tags.through)
+def auto_generate_search_data(sender, instance, action, **kwargs):
+    instance.recalculate_search_text()
 
 
 @receiver(models.signals.post_delete, sender=Vector)
