@@ -39,7 +39,7 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def featured(self, request):
-        featured = Featured.objects.order_by('order')[0:6].all()
+        featured = Featured.objects.order_by('order').all()
         serializer = FeaturedSerializer(featured, many=True, context={'request': request})
         return Response(serializer.data, status=200)
 

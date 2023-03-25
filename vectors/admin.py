@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.utils.html import mark_safe
 from django.utils.translation import ngettext
 
+from adminsortable2.admin import SortableAdminMixin
+
 from vectors.models import Vector, Featured
 
 
@@ -73,7 +75,7 @@ class VectorAdmin(admin.ModelAdmin):
 
 
 @admin.register(Featured)
-class FeaturedAdmin(admin.ModelAdmin):
+class FeaturedAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ['name', 'tag', 'order']
     list_editable = ['tag', 'order']
     save_on_top = True

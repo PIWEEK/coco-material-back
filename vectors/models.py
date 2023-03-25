@@ -68,7 +68,7 @@ class Featured(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     tag = models.CharField(max_length=100)
-    order = models.IntegerField()
+    order = models.IntegerField(default=999)
 
     @property
     def vectors(self):
