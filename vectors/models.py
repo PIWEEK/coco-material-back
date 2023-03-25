@@ -66,19 +66,22 @@ class Vector(models.Model):
 
 class Featured(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, blank=True, null=True)
-    tag = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=False, null=False)
+    tag = models.CharField(max_length=100, blank=True, null=True)
     order = models.IntegerField(default=999)
 
     @property
     def vectors(self):
-        return Vector.objects.filter(tags__name=self.tag).order_by('?')[0:12]
+        vectors = Vector.objects.all()
+        if self.tag:
+            vectors = vectors.filter(tags__name=self.tag)
+        return vectors.order_by('?')[0:12]
 
     class Meta:
         ordering = ["order"]
 
     def __str__(self):
-        return self.tag
+        return f"{self.name} ({self.tag or ''})"
 
 
 @receiver(models.signals.m2m_changed, sender=Vector.tags.through)
