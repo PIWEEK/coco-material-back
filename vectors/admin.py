@@ -76,6 +76,8 @@ class VectorAdmin(admin.ModelAdmin):
 
 @admin.register(Featured)
 class FeaturedAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ['name', 'tag', 'order']
-    list_editable = ['tag', 'order']
+    list_display = [ 'order', 'name', 'tag']
+    list_display_links = ['name']
+    list_editable = ['tag']
+    sortable_by = []
     save_on_top = True
