@@ -10,11 +10,6 @@ from adminsortable2.admin import SortableAdminMixin
 from vectors.models import Vector, Featured
 
 
-admin.site.site_header = "CocoMaterial administration"
-admin.site.site_title = "CocoMaterial site admin"
-admin.site.enable_nav_sidebar = False
-
-
 @admin.register(Vector)
 class VectorAdmin(admin.ModelAdmin):
     fieldsets = (
@@ -28,8 +23,8 @@ class VectorAdmin(admin.ModelAdmin):
     list_filter = ['uploaded', 'tags']
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
-    save_on_top = True
     actions = ["recalculate_search_text"]
+    change_list_template = "admin/change_list_top_bottom_pagination.html"
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
@@ -80,4 +75,4 @@ class FeaturedAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display_links = ['name']
     list_editable = ['tag']
     sortable_by = []
-    save_on_top = True
+    change_list_template = "admin/change_list_top_bottom_pagination.html"

@@ -26,6 +26,7 @@ django==4.2.3
     #   django-admin-sortable2
     #   django-cors-headers
     #   django-filter
+    #   django-jazzmin
     #   django-taggit
     #   djangorestframework
 django-admin-sortable2==2.1.8
@@ -36,7 +37,7 @@ django-cors-headers==4.2.0
     # via -r requirements.in
 django-filter==23.2
     # via -r requirements.in
-django-light==0.1.0.post3
+django-jazzmin==2.6.0
     # via -r requirements.in
 django-taggit==4.0.0
     # via -r requirements.in
