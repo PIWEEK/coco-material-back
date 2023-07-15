@@ -1,4 +1,5 @@
 from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank, TrigramWordSimilarity
+from django.db.models import Q
 from django_filters import rest_framework as filters
 from vectors.models import Vector
 
@@ -13,8 +14,11 @@ class TagsFilter(filters.CharFilter):
         # Full Text Search by tags
         return (
             qs
-            .annotate(search=SearchVector("search_text", config="simple_unaccent"))
-            .filter(search=SearchQuery(tags, config="simple_unaccent"))
+            .annotate(
+                search_a=SearchVector("search_text", config="simple_unaccent"),
+                search_b=SearchVector("search_text", config="english"),
+            )
+            .filter(Q(search_a=SearchQuery(tags, config="simple_unaccent")) | Q(search_b=SearchQuery(tags, config="english")))
             .distinct()
         )
 
