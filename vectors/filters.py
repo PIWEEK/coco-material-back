@@ -13,8 +13,8 @@ class TagsFilter(filters.CharFilter):
         # Full Text Search by tags
         return (
             qs
-            .annotate(search=SearchVector("search_text", config="english"))
-            .filter(search=SearchQuery(tags, config="english"))
+            .annotate(search=SearchVector("search_text", config="simple_unaccent"))
+            .filter(search=SearchQuery(tags, config="simple_unaccent"))
             .distinct()
         )
 
