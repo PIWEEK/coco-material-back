@@ -10,12 +10,14 @@ def populate_search_text(apps, schema_editor):
     Vector = apps.get_model("vectors", "Vector")
     TaggedItems = apps.get_model('taggit', 'TaggedItem')
     ContentType = apps.get_model('contenttypes', 'ContentType')
-
-    ct = ContentType.objects.get(app_label="vectors", model="vector")
-    for v in Vector.objects.all():
-        tagged_items = TaggedItems.objects.filter(content_type_id=ct.id, object_id=v.id)
-        v.search_text = " ".join(i.tag.name for i in tagged_items)
-        v.save()
+    try:
+        ct = ContentType.objects.get(app_label="vectors", model="vector")
+        for v in Vector.objects.all():
+            tagged_items = TaggedItems.objects.filter(content_type_id=ct.id, object_id=v.id)
+            v.search_text = " ".join(i.tag.name for i in tagged_items)
+            v.save()
+    except ContentType.DoesNotExist:
+        pass
 
 
 class Migration(migrations.Migration):
