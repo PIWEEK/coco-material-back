@@ -24,7 +24,7 @@ class VectorAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
     actions = ["recalculate_search_text"]
-    change_list_template = "admin/change_list_top_bottom_pagination.html"
+    save_on_top = True
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
@@ -75,4 +75,4 @@ class FeaturedAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display_links = ['name']
     list_editable = ['tag']
     sortable_by = []
-    change_list_template = "admin/change_list_top_bottom_pagination.html"
+    save_on_top = True

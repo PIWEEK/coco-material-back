@@ -2,8 +2,6 @@
 {% load admin_list %}
 
 {% block result_list %}
-    <div class="row pb-4">
-        {% pagination cl %}
-    </div>
+    {% pagination cl %}
     {{ block.super }}
 {% endblock %}

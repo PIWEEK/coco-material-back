@@ -31,25 +31,25 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
-
-    'django.contrib.admin',
+    # Django apps
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    # CocoMaterial apps
+    'coco_material',
+    'vectors.apps.VectorsConfig',
+    # Admin panel apps
+    'django_light',
+    'django.contrib.admin',
+    # Third-party libs apps
     'django_filters',
     'taggit',
     'colorfield',
     'adminsortable2',
-
     'rest_framework',
     'corsheaders',
-
-    'coco_material',
-    'vectors.apps.VectorsConfig',
 ]
 
 MIDDLEWARE = [
@@ -171,32 +171,6 @@ REST_FRAMEWORK = {
     #     'rest_framework_simplejwt.authentication.JWTAuthentication',
     #     'rest_framework.authentication.SessionAuthentication',
     # ]
-}
-
-# Jazzmin Admin Theme
-JAZZMIN_SETTINGS = {
-    "site_title": "CocoMaterial Admin",
-    "site_header": "CocoMaterial",
-    "site_brand": "CocoMaterial",
-    "welcome_sign": "Welcome to CocoMaterial Admin Panel",
-    "copyright": "Cocomaterial",
-
-    "site_logo": "coco_material/img/logo_white.svg",
-    "login_logo": "coco_material/img/logo_text_black.svg",
-
-    #"show_ui_builder": True,
-
-    "search_model": ["vectors.Vector", "taggit.Tag",],
-
-    "icons": {
-        "auth.User": "fas fa-users",
-        "taggit.Tag": "fas fa-tags",
-        "vectors.Featured": "fas fa-star",
-        "vectors.Vector": "fas fa-image",
-    },
-
-    "changeform_format": "single", # single, horizontal_tabs, vertical_tabs, collapsible, carousel
-    "language_chooser": False,
 }
 
 
