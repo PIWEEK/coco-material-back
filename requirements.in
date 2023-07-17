@@ -1,9 +1,11 @@
 Django
 
 django-light
+
 django-taggit
 django-colorfield
 django-admin-sortable2
+django-admin-list-filter-dropdown
 
 djangorestframework
 django-cors-headers

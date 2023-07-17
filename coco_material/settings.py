@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'vectors.apps.VectorsConfig',
     # Admin panel apps
     'django_light',
+    'django_admin_listfilter_dropdown',
     'django.contrib.admin',
     # Third-party libs apps
     'django_filters',

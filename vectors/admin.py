@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.utils.html import mark_safe
 from django.utils.translation import ngettext
 
+from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from adminsortable2.admin import SortableAdminMixin
 
 from vectors.models import Vector, Featured
@@ -20,7 +21,10 @@ class VectorAdmin(admin.ModelAdmin):
     list_display = ['description', 'name', 'svg_image_thumb', 'colored_svg_image_thumb', 'tags', 'stroke_color', 'fill_color']
     readonly_fields = ['svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb', 'search_text', 'uploaded']
     list_editable = ['name', 'stroke_color', 'fill_color', 'tags']
-    list_filter = ['uploaded', 'tags']
+    list_filter = [
+        'uploaded',
+        ('tags', RelatedDropdownFilter)
+    ]
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
     actions = ["recalculate_search_text"]
