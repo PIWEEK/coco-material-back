@@ -17,9 +17,10 @@ import svgutils.transform as sg
 from vectors.models import Vector
 from vectors.serializers import SuggestionSerializer
 from vectors.services import taiga as taiga_services
+from vectors.services import images as images_services
+
 
 class Download(APIView):
-
     def get(self, request):
         # parse params
         ok, errors = self._parse_params(request)
@@ -66,11 +67,11 @@ class Download(APIView):
                     for vector in vectors:
                         if suggested:
                             if vector.colored_svg:
-                                self._edit_vector(vector.colored_svg, directory, None, None)
+                                images_services.customize_vector(vector.colored_svg, directory, None, None)
                             else:
-                                self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
+                                images_services.customize_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                         else:
-                            self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                            images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
 
                     # crear un zip con todos los svgs
                     svgs = pathlib.Path(directory).glob('*.svg')
@@ -84,11 +85,11 @@ class Download(APIView):
                     for vector in vectors:
                         if suggested:
                             if vector.colored_svg:
-                                self._edit_vector(vector.colored_svg, directory)
+                                images_services.customize_vector(vector.colored_svg, directory)
                             else:
-                                self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
+                                images_services.customize_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                         else:
-                            self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                            images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
 
                     # por cada vector en la carpeta, exportarlo a PNG
                     svgs = pathlib.Path(directory).glob('*.svg')
@@ -107,11 +108,11 @@ class Download(APIView):
                     for vector in vectors:
                         if suggested:
                             if vector.colored_svg:
-                                self._edit_vector(vector.colored_svg, directory)
+                                images_services.customize_vector(vector.colored_svg, directory)
                             else:
-                                self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
+                                images_services.customize_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                         else:
-                            self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                            images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
 
                     # por cada vector en la carpeta, exportarlo a PNG
                     svgs = pathlib.Path(directory).glob('*.svg')
@@ -145,11 +146,11 @@ class Download(APIView):
                             svg = vector.colored_svg
                             path = svg.path
                         else:
-                            self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
+                            images_services.customize_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                             svg = next(pathlib.Path(directory).glob('*.svg'))
                             path = str(svg)
                     else:
-                        self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                        images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
                         svg = next(pathlib.Path(directory).glob('*.svg'))
                         path = str(svg)
 
@@ -161,9 +162,9 @@ class Download(APIView):
 
                 elif img_format == 'png':
                     if suggested and vector.colored_svg:
-                        self._edit_vector(vector.colored_svg, directory)
+                        images_services.customize_vector(vector.colored_svg, directory)
                     else:
-                        self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                        images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
 
                     svg = next(pathlib.Path(directory).glob('*.svg'))
                     new_name = svg.name.replace('svg', 'png')
@@ -181,11 +182,11 @@ class Download(APIView):
                     # obtener el svg
                     if suggested:
                         if vector.colored_svg:
-                            self._edit_vector(vector.colored_svg, directory)
+                            images_services.customize_vector(vector.colored_svg, directory)
                         else:
-                            self._edit_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
+                            images_services.customize_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                     else:
-                        self._edit_vector(vector.svg, directory, new_stroke, new_fill)
+                        images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
                     svg = next(pathlib.Path(directory).glob('*.svg'))
 
                     # generar el png
@@ -251,23 +252,6 @@ class Download(APIView):
         new_name = svg.name.replace('.svg', '.png')
         dest = str(svg.parent / new_name)
         cairosvg.svg2png(url=orig, write_to=dest, output_width=new_width, output_height=new_height)
-
-
-    def _edit_vector(self, svg, directory, new_stroke=None, new_fill=None):
-        # NOTE: Por consenso los svgs usarán fill blanco y negro
-        #  - stroke => fil negro => None, "", #000, #000000, #030303 (old, deprecated)
-        #  - fill => fil blanco: #fff, #ffffff
-        with minidom.parse(svg.path) as dom, open(f'{directory}/{svg.name}', 'w') as newsvg:
-            if new_stroke or new_fill:
-                paths = dom.getElementsByTagName('path')
-                for path in paths:
-                    fill = path.getAttribute('fill')
-                    if fill in ['#030303', '#000000', '#000', "", None]:
-                        fill = f'#{new_stroke}'.replace('#none', 'none').replace("##", "#")
-                    else: # fill == fff | ffffff
-                        fill = f'#{new_fill}'.replace('#none', 'none').replace("##", "#")
-                    path.setAttribute('fill', fill)
-            newsvg.write(dom.toxml())
 
 
 class Suggestion(CreateAPIView):

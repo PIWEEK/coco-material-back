@@ -1,7 +1,13 @@
 import base64
+import pathlib
+import tempfile
+from os.path import basename
+from zipfile import ZipFile
 
 from django.contrib import admin
 from django.contrib import messages
+from django.http import HttpResponse
+from django.utils import timezone
 from django.utils.html import mark_safe
 from django.utils.translation import ngettext
 
@@ -9,6 +15,7 @@ from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from adminsortable2.admin import SortableAdminMixin
 
 from vectors.models import Vector, Featured
+from vectors.services import images as images_services
 
 
 @admin.register(Vector)
@@ -27,7 +34,7 @@ class VectorAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
-    actions = ["recalculate_search_text"]
+    actions = ["recalculate_search_text", "get_stroke_svg_files"]
     save_on_top = True
 
     def get_queryset(self, request):
@@ -66,6 +73,32 @@ class VectorAdmin(admin.ModelAdmin):
             ) % count,
             messages.SUCCESS,
         )
+
+    @admin.action(description='Get stroke svg files')
+    def get_stroke_svg_files(self, request, queryset):
+        with tempfile.TemporaryDirectory() as directory:
+            # customize vectors' svg
+            for vector in queryset.exclude(svg__isnull=True):
+                images_services.customize_vector(
+                    vector.svg, directory,
+                    "000000", "none"
+                )
+
+            # Generate zip file
+            zip_name = f"stroke_svg_files-{timezone.now().isoformat()}.zip"
+            zip_file_name = f"{directory}/{zip_name}"
+            svgs = pathlib.Path(directory).glob('*.svg')
+            with ZipFile(zip_file_name, 'w') as zipfile:
+                for svg in svgs:
+                    zipfile.write(str(svg), basename(svg.name))
+
+            # Return zip file
+            with open(zip_file_name, 'rb') as f:
+                zip_file = f.read()
+                response = HttpResponse(zip_file, content_type='application/zip')
+                response['Content-Disposition'] = f'attachment; filename="{zip_name}"'
+                return response
+
 
     class Media:
         css = {
