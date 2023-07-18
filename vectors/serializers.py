@@ -39,7 +39,7 @@ class VectorSerializer(serializers.HyperlinkedModelSerializer):
         model = Vector
         fields = (
             'id', 'url', 'name', 'tags',
-            'svg', 'svg_content', 'colored_svg', 'colored_svg_content', 'stroke_color', 'fill_color'
+            'svg', 'svg_content', 'colored_svg', 'colored_svg_content', 'stroke_color', 'fill_color',
             'gif', 'colored_gif',
         )
 
