@@ -59,8 +59,13 @@ class VectorAdmin(admin.ModelAdmin):
     ]
     list_editable = ['name', 'stroke_color', 'fill_color', 'tags']
     list_filter = [
+        ('tags', RelatedDropdownFilter),
+        ("colored_svg", admin.EmptyFieldListFilter),
+        ("stroke_color", admin.EmptyFieldListFilter),
+        ("fill_color", admin.EmptyFieldListFilter),
+        ("gif", admin.EmptyFieldListFilter),
+        ("colored_gif", admin.EmptyFieldListFilter),
         'uploaded',
-        ('tags', RelatedDropdownFilter)
     ]
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
