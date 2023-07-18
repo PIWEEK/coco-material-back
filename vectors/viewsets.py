@@ -21,7 +21,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Vector.objects.all()
+    queryset = Vector.objects.all().exclude(svg__isnull=True)
     pagination_class = StandardResultsSetPagination
     filterset_class = VectorsFilter
     ordering_fields= ['uploaded']
@@ -45,5 +45,5 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def total(self, request):
-        total_vectors = Vector.objects.count()
+        total_vectors = self.queryset.count()
         return Response({'total_vectors': total_vectors}, status=200)

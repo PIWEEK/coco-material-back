@@ -21,12 +21,42 @@ from vectors.services import images as images_services
 @admin.register(Vector)
 class VectorAdmin(admin.ModelAdmin):
     fieldsets = (
-        ('Main', {'fields': ('name', 'description', 'tags', 'search_text', 'uploaded')}),
-        ('Vector', {'fields': (('svg', 'svg_image'),)}),
-        ('Colored Vector', {'fields': (('stroke_color', 'fill_color'), ('colored_svg', 'colored_svg_image'))}),
+        (
+            'Main', {
+                'fields': (
+                    'name', 'description', 'tags', 'search_text', 'uploaded'
+                )
+            }
+        ),
+        (
+            'SVG', {
+                'fields': (
+                    ('svg', 'svg_image'),
+                    ('colored_svg', 'colored_svg_image'),
+                    ('stroke_color', 'fill_color'),
+                ),
+            }
+        ),
+        (
+            'GIF', {
+                'fields': (
+                    ('gif', 'gif_image'),
+                    ('colored_gif', 'colored_gif_image'),
+                ),
+            }
+        ),
     )
-    list_display = ['description', 'name', 'svg_image_thumb', 'colored_svg_image_thumb', 'tags', 'stroke_color', 'fill_color']
-    readonly_fields = ['svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb', 'search_text', 'uploaded']
+    list_display = [
+        'description',
+        'svg_image_thumb', 'colored_svg_image_thumb',  'stroke_color', 'fill_color',
+        'gif_image_thumb', 'colored_gif_image_thumb',
+        'name', 'tags',
+    ]
+    readonly_fields = [
+        'svg_image', 'svg_image_thumb', 'colored_svg_image', 'colored_svg_image_thumb',
+        'gif_image', 'gif_image_thumb', 'colored_gif_image', 'colored_gif_image_thumb',
+        'search_text', 'uploaded'
+    ]
     list_editable = ['name', 'stroke_color', 'fill_color', 'tags']
     list_filter = [
         'uploaded',
@@ -34,30 +64,61 @@ class VectorAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
-    actions = ["recalculate_search_text", "get_stroke_svg_files"]
+    actions = [
+        "recalculate_search_text",
+        "get_stroke_svg_files"
+    ]
     save_on_top = True
+
+    class Media:
+        css = {
+            'all': ('coco_material/css/cocostyle.css',)
+        }
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
 
+    # Svg files
     def svg_image(self, obj):
-        return mark_safe(f'<img src="{obj.svg.url}" width=250 height=250 />')
+        if not obj.svg: return ""
+        return mark_safe(f'<img src="{obj.svg.url}" width=128 height=128 />')
 
-    @admin.display(description="image (b/w)")
+    @admin.display(description="SVG (b/w)")
     def svg_image_thumb(self, obj):
+        if not obj.svg: return ""
         return mark_safe(f'<img src="{obj.svg.url}" width=70 height=70 />')
 
     def colored_svg_image(self, obj):
         if not obj.colored_svg_content: return ""
         base64_svg = base64.b64encode(obj.colored_svg_content.encode('utf-8')).decode('utf-8')
-        return mark_safe(f'<img src="data:image/svg+xml;base64,{base64_svg}" width=256 height=256 />')
+        return mark_safe(f'<img src="data:image/svg+xml;base64,{base64_svg}" width=128 height=128 />')
 
-    @admin.display(description="image (color)")
+    @admin.display(description="SVG (color)")
     def colored_svg_image_thumb(self, obj):
         if not obj.colored_svg_content: return ""
         base64_svg = base64.b64encode(obj.colored_svg_content.encode('utf-8')).decode('utf-8')
         return mark_safe(f'<img src="data:image/svg+xml;base64,{base64_svg}" width=70 height=70 />')
 
+    # Gif files
+    def gif_image(self, obj):
+        if not obj.gif: return ""
+        return mark_safe(f'<img src="{obj.gif.url}" width=128 height=128 />')
+
+    @admin.display(description="GIF (b/w)")
+    def gif_image_thumb(self, obj):
+        if not obj.gif: return ""
+        return mark_safe(f'<img src="{obj.gif.url}" width=70 height=70 />')
+
+    def colored_gif_image(self, obj):
+        if not obj.colored_gif: return ""
+        return mark_safe(f'<img src="{obj.colored_gif.url}" width=128 height=128 />')
+
+    @admin.display(description="GIF (color)")
+    def colored_gif_image_thumb(self, obj):
+        if not obj.colored_gif: return ""
+        return mark_safe(f'<img src="{obj.colored_gif.url}" width=70 height=70 />')
+
+    # Actions
     @admin.action(description='Recalculate search text')
     def recalculate_search_text(self, request, queryset):
         for obj in queryset:
@@ -98,12 +159,6 @@ class VectorAdmin(admin.ModelAdmin):
                 response = HttpResponse(zip_file, content_type='application/zip')
                 response['Content-Disposition'] = f'attachment; filename="{zip_name}"'
                 return response
-
-
-    class Media:
-        css = {
-            'all': ('coco_material/css/cocostyle.css',)
-        }
 
 
 @admin.register(Featured)
