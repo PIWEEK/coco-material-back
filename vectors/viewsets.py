@@ -21,7 +21,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Vector.objects.all().exclude(svg__isnull=True)
+    queryset = Vector.objects.all().exclude(svg="")
     pagination_class = StandardResultsSetPagination
     filterset_class = VectorsFilter
     ordering_fields= ['uploaded']
@@ -39,8 +39,12 @@ class VectorViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['get'])
     def featured(self, request):
-        featured = Featured.objects.order_by('order').all()
-        serializer = FeaturedSerializer(featured, many=True, context={'request': request})
+        featured = Featured.objects.all().order_by('order')
+        serializer = FeaturedSerializer(
+            featured,
+            many=True,
+            context={'request': request}
+        )
         return Response(serializer.data, status=200)
 
     @action(detail=False, methods=['get'])

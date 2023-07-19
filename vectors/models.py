@@ -94,7 +94,7 @@ class Featured(models.Model):
 
     @property
     def vectors(self):
-        vectors = Vector.objects.all()
+        vectors = Vector.objects.all().exclude(svg="")
         if self.tag:
             vectors = vectors.filter(tags__name=self.tag)
         return vectors.order_by('?')[0:12]
