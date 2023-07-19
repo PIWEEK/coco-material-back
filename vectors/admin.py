@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.html import mark_safe
 from django.utils.translation import ngettext
 
-from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
+# from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 from adminsortable2.admin import SortableAdminMixin
 
 from vectors.models import Vector, Featured
@@ -58,15 +58,15 @@ class VectorAdmin(admin.ModelAdmin):
         'search_text', 'uploaded'
     ]
     list_editable = ['name', 'stroke_color', 'fill_color', 'tags']
-    list_filter = [
-        ('tags', RelatedDropdownFilter),
-        ("colored_svg", admin.EmptyFieldListFilter),
-        ("stroke_color", admin.EmptyFieldListFilter),
-        ("fill_color", admin.EmptyFieldListFilter),
-        ("gif", admin.EmptyFieldListFilter),
-        ("colored_gif", admin.EmptyFieldListFilter),
-        'uploaded',
-    ]
+    # list_filter = [
+    #     ('tags', RelatedDropdownFilter),
+    #     ("colored_svg", admin.EmptyFieldListFilter),
+    #     ("stroke_color", admin.EmptyFieldListFilter),
+    #     ("fill_color", admin.EmptyFieldListFilter),
+    #     ("gif", admin.EmptyFieldListFilter),
+    #     ("colored_gif", admin.EmptyFieldListFilter),
+    #     'uploaded',
+    # ]
     search_fields = ['name', 'description', 'tags__name']
     ordering = ["-uploaded"]
     actions = [
