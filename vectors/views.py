@@ -6,13 +6,11 @@ from uuid import uuid4
 from xml.dom import minidom
 from zipfile import ZipFile
 
-import cairosvg
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-import svgutils.transform as sg
 
 from vectors.models import Vector
 from vectors.serializers import SuggestionSerializer
@@ -37,6 +35,17 @@ class Download(APIView):
 
         # get vectors
         queryset = Vector.objects
+
+        # filter by img format
+        if img_format == 'gif':
+            if suggested:
+                queryset = queryset.exclude(colored_gif="").exclude(colored_gif__isnull=True)
+            else:
+                queryset = queryset.exclude(gif="").exclude(gif__isnull=True)
+        elif img_format != 'both':
+            queryset = queryset.exclude(svg="").exclude(svg__isnull=True)
+
+        # filter by tags
         if 'tags' in request.query_params:
             tags = request.query_params['tags'].split(',')
             if 'all' in tags:
@@ -94,7 +103,7 @@ class Download(APIView):
                     # por cada vector en la carpeta, exportarlo a PNG
                     svgs = pathlib.Path(directory).glob('*.svg')
                     for svg in svgs:
-                        self._export_to_png(svg, size)
+                        images_services.export_to_png(svg, size)
 
                     # crear un zip con todos los pngs de la carpeta
                     pngs = pathlib.Path(directory).glob('*.png')
@@ -102,10 +111,10 @@ class Download(APIView):
                         for png in pngs:
                             zipfile.write(str(png), basename(png.name))
 
-                # si el formato es both (png+svg)
+                # si el formato es both (png+svg+gif)
                 elif img_format == 'both':
-                    # por cada vector, convertirlo en vector editado en la carpeta temporal
-                    for vector in vectors:
+                    # por cada vector con svg, convertirlo en vector editado en la carpeta temporal
+                    for vector in vectors.exclude(svg="").exclude(svg__isnull=True):
                         if suggested:
                             if vector.colored_svg:
                                 images_services.customize_vector(vector.colored_svg, directory)
@@ -114,20 +123,33 @@ class Download(APIView):
                         else:
                             images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
 
-                    # por cada vector en la carpeta, exportarlo a PNG
+                    # por cada svg en la carpeta, exportarlo a PNG
                     svgs = pathlib.Path(directory).glob('*.svg')
                     for svg in svgs:
-                        self._export_to_png(svg, size)
+                        images_services.export_to_png(svg, size)
+
+                    # por cada vector con gif
+                    gif_vectors = (vectors
+                        .exclude(gif="", colored_gif="")
+                        .exclude(gif__isnull=True, colored_gif__isnull=True))
+
+                    for vector in gif_vectors:
+                        if suggested:
+                            field = vector.colored_gif if vector.colored_gif else vector.gif
+                        else:
+                            field = vector.gif if vector.gif else vector.colored_gif
+
+                        with (
+                            open(f'{directory}/{field.name}', 'wb') as newfile,
+                            open(field.file.name, 'rb') as giffile
+                        ):
+                            newfile.write(giffile.read())
 
                     # crear un zip con todos los svgs y pngs de la carpeta
-                    svgs = pathlib.Path(directory).glob('*.svg')
-                    pngs = pathlib.Path(directory).glob('*.png')
+                    imgs = pathlib.Path(directory).glob('*.[svg png gif]*')
                     with ZipFile(zip_file_name, 'w') as zipfile:
-                        for svg in svgs:
-                            zipfile.write(str(svg), basename(svg.name))
-
-                        for png in pngs:
-                            zipfile.write(str(png), basename(png.name))
+                        for img in imgs:
+                            zipfile.write(str(img), basename(img.name))
 
                 with open(zip_file_name, 'rb') as f:
                     zip_file = f.read()
@@ -169,7 +191,7 @@ class Download(APIView):
                     svg = next(pathlib.Path(directory).glob('*.svg'))
                     new_name = svg.name.replace('svg', 'png')
 
-                    self._export_to_png(svg, size)
+                    images_services.export_to_png(svg, size)
                     returning_file = next(pathlib.Path(directory).glob('*.png'))
                     with open(returning_file, 'rb') as f:
                         response_file = f.read()
@@ -177,28 +199,49 @@ class Download(APIView):
                         response['Content-Disposition'] = f'attachment; filename="{new_name}"'
                         return response
 
+                # si el formato es gif
+                elif img_format == 'gif':
+                    gif = vector.colored_gif if suggested and vector.colored_gif else vector.gif
+                    path = gif.path
+
+                    with open(path, 'rb') as f:
+                        response_file = f.read()
+                        response = HttpResponse(response_file, content_type='image/gif')
+                        response['Content-Disposition'] = f'attachment; filename="{gif.name}"'
+                        return response
+
                 # si el formato es both (png+svg)
                 elif img_format == 'both':
-                    # obtener el svg
-                    if suggested:
-                        if vector.colored_svg:
-                            images_services.customize_vector(vector.colored_svg, directory)
+                    svg = png = gif = None
+
+                    if vector.svg:
+                        # obtener el svg
+                        if suggested:
+                            if vector.colored_svg:
+                                images_services.customize_vector(vector.colored_svg, directory)
+                            else:
+                                images_services.customize_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
                         else:
-                            images_services.customize_vector(vector.svg, directory, vector.stroke_color, vector.fill_color)
-                    else:
-                        images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
-                    svg = next(pathlib.Path(directory).glob('*.svg'))
+                            images_services.customize_vector(vector.svg, directory, new_stroke, new_fill)
+                        svg = next(pathlib.Path(directory).glob('*.svg'))
 
-                    # generar el png
-                    self._export_to_png(svg, size)
-                    png = next(pathlib.Path(directory).glob('*.png'))
+                        # generar el png
+                        images_services.export_to_png(svg, size)
+                        png = next(pathlib.Path(directory).glob('*.png'))
 
-                    # crear un zip con el svg y el png
-                    zip_name = vector.svg.name.replace('svg', 'zip')
+                    if vector.gif or vector.colored_gif:
+                        gif = vector.colored_gif.file if suggested and vector.colored_gif else vector.gif.file
+
+                    # crear un zip con el svg, el png y el gif
+                    zip_name = f"{vector.name.replace(' ', '_')}.zip"
                     zip_file_name = f'{directory}/{zip_name}'
                     with ZipFile(zip_file_name, 'w') as zipfile:
-                        zipfile.write(str(svg), basename(svg.name))
-                        zipfile.write(str(png), basename(png.name))
+                        if svg:
+                            zipfile.write(str(svg), basename(svg.name))
+                        if png:
+                            zipfile.write(str(png), basename(png.name))
+                        if gif:
+                            zipfile.write(str(gif), basename(gif.name))
 
                     with open(zip_file_name, 'rb') as f:
                         zip_file = f.read()
@@ -221,15 +264,15 @@ class Download(APIView):
             ok = False
         else:
             img_format = request.query_params.get('img_format')
-            if img_format not in ['png', 'svg', 'both']:
+            if img_format not in ['png', 'svg', 'gif', 'both']:
                 errors.append('incorrect img_format: svg or png')
                 ok = False
             suggested = request.query_params.get('suggested')
             new_stroke = request.query_params.get('stroke')
             new_fill = request.query_params.get('fill')
             size = request.query_params.get('size', None)
-            if size is None and img_format == "png":
-                errors.append('png format needs size param')
+            if size is None and img_format in ["png"]:
+                errors.append('size param is needed for this format')
                 ok = False
             if size:
                 try:
@@ -239,19 +282,6 @@ class Download(APIView):
                     ok = False
 
         return ok, errors
-
-    def _export_to_png(self, svg, size):
-        orig = str(svg)
-        fig = sg.fromfile(orig)
-        width = float(fig.width[:-2])
-        height = float(fig.height[:-2])
-        max_size = max(width, height)
-        increase_ratio = float(size / max_size)
-        new_width = round(width * increase_ratio)
-        new_height = round(height * increase_ratio)
-        new_name = svg.name.replace('.svg', '.png')
-        dest = str(svg.parent / new_name)
-        cairosvg.svg2png(url=orig, write_to=dest, output_width=new_width, output_height=new_height)
 
 
 class Suggestion(CreateAPIView):

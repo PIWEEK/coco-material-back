@@ -21,7 +21,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class VectorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Vector.objects.all().exclude(svg="")
+    queryset = Vector.objects.all()
     pagination_class = StandardResultsSetPagination
     filterset_class = VectorsFilter
     ordering_fields= ['uploaded']
