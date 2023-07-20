@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # CocoMaterial apps
     'coco_material',
-    'vectors.apps.VectorsConfig',
+    'vectors',
+    'resources',
     # Admin panel apps
     'django_light',
     'django_admin_listfilter_dropdown',
