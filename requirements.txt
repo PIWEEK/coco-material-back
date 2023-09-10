@@ -24,6 +24,7 @@ django==4.2.3
     # via
     #   -r requirements.in
     #   django-admin-sortable2
+    #   django-constrainedfilefield
     #   django-cors-headers
     #   django-filter
     #   django-taggit
@@ -33,6 +34,8 @@ django-admin-list-filter-dropdown==1.0.3
 django-admin-sortable2==2.1.8
     # via -r requirements.in
 django-colorfield==0.9.0
+    # via -r requirements.in
+django-constrainedfilefield[filetype]==5.0.0
     # via -r requirements.in
 django-cors-headers==4.2.0
     # via -r requirements.in
@@ -70,6 +73,8 @@ pyjwkest==1.4.2
     # via python-taiga
 python-dateutil==2.8.2
     # via python-taiga
+python-magic==0.4.27
+    # via django-constrainedfilefield
 python-taiga @ git+https://github.com/nephila/python-taiga.git@f448edabe872e2eb295550d75a1267a0c8f27a40
     # via -r requirements.in
 pytz==2023.3

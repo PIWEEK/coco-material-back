@@ -5,6 +5,7 @@ from django.core.files.storage import default_storage
 from django.db import models
 from django.db.models import Q
 from django.db.models.constraints import CheckConstraint
+from constrainedfilefield.fields import ConstrainedFileField
 from django.dispatch import receiver
 from django.utils.functional import cached_property
 
@@ -21,14 +22,14 @@ class Vector(models.Model):
     search_text = models.TextField(null=True, blank=True)
 
     # SVG files
-    svg = models.FileField(blank=True, null=True)
-    colored_svg = models.FileField(blank=True, null=True)
+    svg = ConstrainedFileField(blank=True, null=True, content_types=['image/svg+xml'])
+    colored_svg = ConstrainedFileField(blank=True, null=True, content_types=['image/svg+xml'])
     stroke_color = ColorField(blank=True, null=True)
     fill_color = ColorField(blank=True, null=True)
 
     # GIF files
-    gif = models.FileField(blank=True, null=True)
-    colored_gif = models.FileField(blank=True, null=True)
+    gif = ConstrainedFileField(blank=True, null=True, content_types=['image/gif'])
+    colored_gif = ConstrainedFileField(blank=True, null=True, content_types=['image/gif'])
 
     class Meta:
         ordering = ["id"]
@@ -49,34 +50,43 @@ class Vector(models.Model):
 
     @cached_property
     def svg_content(self):
-        if not self.svg:
-            return ""
+        if self.svg:
+            try:
+                with open(self.svg.path, 'r') as f:
+                    text = f.read()
+                    return text
+            except FileNotFoundError:
+                pass
 
-        with open(self.svg.path, 'r') as f:
-            text = f.read()
-            return text
+        return ""
 
     @cached_property
     def colored_svg_content(self):
         if self.colored_svg:
-            with open(self.colored_svg.path, 'r') as f:
-                text = f.read()
-                return text
+            try:
+                with open(self.colored_svg.path, 'r') as f:
+                    text = f.read()
+                    return text
+            except FileNotFoundError:
+                pass
 
         elif self.stroke_color or self.fill_color:
             new_stroke = self.stroke_color or "#000"
             new_fill = self.fill_color  or "#fff"
 
-            with minidom.parse(self.svg.path) as dom:
-                paths = dom.getElementsByTagName('path')
-                for path in paths:
-                    fill = path.getAttribute('fill')
-                    if fill in ['#030303', '#000000', '#000', "", None]: # black color
-                        fill = f'{new_stroke}'.replace('#none', 'none')
-                    else: # fill == fff | ffffff
-                        fill = f'{new_fill}'.replace('#none', 'none')
-                    path.setAttribute('fill', fill)
-                return dom.toxml()
+            try:
+                with minidom.parse(self.svg.path) as dom:
+                    paths = dom.getElementsByTagName('path')
+                    for path in paths:
+                        fill = path.getAttribute('fill')
+                        if fill in ['#030303', '#000000', '#000', "", None]: # black color
+                            fill = f'{new_stroke}'.replace('#none', 'none')
+                        else: # fill == fff | ffffff
+                            fill = f'{new_fill}'.replace('#none', 'none')
+                        path.setAttribute('fill', fill)
+                    return dom.toxml()
+            except FileNotFoundError:
+                pass
 
         return ""
 

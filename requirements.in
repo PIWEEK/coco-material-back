@@ -4,6 +4,7 @@ django-light
 
 django-taggit
 django-colorfield
+django-constrainedfilefield[filetype]
 django-admin-sortable2
 django-admin-list-filter-dropdown
 
